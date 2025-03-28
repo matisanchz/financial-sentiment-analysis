@@ -1,3 +1,7 @@
 transformers
-feedparser
 requests
+tf-keras
+dotenv
+customtkinter
+python-dateutil
+pillow
