@@ -1,3 +1,4 @@
+import threading
 from customtkinter import *
 
 from config import Settings
@@ -8,52 +9,87 @@ import os
 
 def get_sentiment_analysis(app, frame, date_from, date_to, keyword):
     if keyword != "" and date_from <= date_to:
-        print(keyword)
-
-        model = FinbertModel()
-
-        num_positive_articles, num_negative_articles, num_neutral_articles, result, final_score = model.get_sentiment(keyword, date_from, date_to)
 
         frame.destroy()
 
-        label1 = CTkLabel(app, text=f'Total positive articles: {num_positive_articles}')
-        label1.pack(pady=12,padx=10)
+        app.geometry("300x200")
 
-        label2 = CTkLabel(app, text=f'Total negative articles: {num_negative_articles}')
-        label2.pack(pady=12,padx=10)
-
-        label3 = CTkLabel(app, text=f'Total neutral articles: {num_neutral_articles}')
-        label3.pack(pady=12,padx=10)
-
-        frame = CTkFrame(master=app)
-        frame.pack(pady=20, padx=60, fill="both", expand=True)
-
-        if result == 'Positive':
-            img_path = Settings.POSITIVE_IMAGE
-        elif result == 'Negative':
-            img_path = Settings.NEGATIVE_IMAGE
-        else:
-            img_path = Settings.NEUTRAL_IMAGE
-
-        img = Image.open(img_path)
-
-        image = CTkImage(light_image=img, dark_image=img, size=(40,40))
+        preloader = CTkFrame(master=app)
+        preloader.pack(pady=20, padx=60, fill="both", expand=True)
         
-        label5 = CTkLabel(frame, image=image, text="") 
-        label5.pack(pady=10)
+        loading_label = CTkLabel(preloader, text="Analyzing sentiment...", font=("Arial", 16, "bold"))
+        loading_label.pack(pady=20)
 
-        label6 = CTkLabel(frame, text=result) 
-        label6.pack(pady=10)
+        img = Image.open("images/wait.png")
 
-        return_app = CTkButton(master=app, text="Return", command=lambda: return_main(app))
-        return_app.pack()
+        image = CTkImage(light_image=img, 
+                        dark_image=img, 
+                        size=(60,60))
+
+        wait = CTkLabel(preloader, image=image, text="") 
+        wait.pack(padx=10, pady=10)
+
+        # Inicia el análisis en un hilo separado
+        thread = threading.Thread(target=lambda: analyze_sentiment(app, preloader, date_from, date_to, keyword))
+        thread.start()
 
     else:
         open_popup(keyword, date_from, date_to)
 
+def analyze_sentiment(app, preloader, date_from, date_to, keyword):
+
+    model = FinbertModel()
+
+    num_positive_articles, num_negative_articles, num_neutral_articles, result, final_score = model.get_sentiment(keyword, date_from, date_to)
+
+    preloader.destroy()
+
+    app.geometry("400x450")
+
+    label1 = CTkLabel(app, text=f'Total positive articles: {num_positive_articles}')
+    label1.pack(pady=12,padx=10)
+
+    label2 = CTkLabel(app, text=f'Total negative articles: {num_negative_articles}')
+    label2.pack(pady=12,padx=10)
+
+    label3 = CTkLabel(app, text=f'Total neutral articles: {num_neutral_articles}')
+    label3.pack(pady=12,padx=10)
+
+    frame = CTkFrame(master=app)
+    frame.pack(pady=20, padx=60, fill="both", expand=True)
+
+    title = CTkLabel(frame, 
+                     text="Sentiment Analysis:", 
+                     font=("Arial", 20, "bold"))
+    
+    title.pack(padx=10, pady=10)
+
+    if result == 'Positive':
+        img_path = Settings.POSITIVE_IMAGE
+    elif result == 'Negative':
+        img_path = Settings.NEGATIVE_IMAGE
+    else:
+        img_path = Settings.NEUTRAL_IMAGE
+
+    img = Image.open(img_path)
+
+    image = CTkImage(light_image=img, dark_image=img, size=(40,40))
+    
+    label5 = CTkLabel(frame, image=image, text="") 
+    label5.pack(pady=10)
+
+    label6 = CTkLabel(frame, text=result) 
+    label6.pack(pady=10)
+
+    label6 = CTkLabel(frame, text=f"Final Score: {final_score}") 
+    label6.pack(pady=10)
+
+    return_app = CTkButton(master=app, text="Return", command=lambda: return_main(app))
+    return_app.pack()
+
 def open_popup(keyword, date_from, date_to):
     popup = CTkToplevel()
-    popup.title("Popup")
+    popup.title("Validator")
 
     if keyword == "":
 
