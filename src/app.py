@@ -28,8 +28,7 @@ def get_sentiment_analysis(app, frame, date_from, date_to, keyword):
 
         wait = CTkLabel(preloader, image=image, text="") 
         wait.pack(padx=10, pady=10)
-
-        # Inicia el análisis en un hilo separado
+        
         thread = threading.Thread(target=lambda: analyze_sentiment(app, preloader, date_from, date_to, keyword))
         thread.start()
 
@@ -100,7 +99,7 @@ def open_popup(keyword, date_from, date_to):
         label2 = CTkLabel(popup, text="Date 'To' must be after Date 'From'.", font=("Arial", 14))
         label2.pack(pady=20, padx=20)
 
-    close_button = CTkButton(popup, text="Cerrar", command=popup.destroy)
+    close_button = CTkButton(popup, text="Close", command=popup.destroy)
     close_button.pack(pady=10)
 
     popup.transient()
