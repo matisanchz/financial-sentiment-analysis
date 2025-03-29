@@ -113,7 +113,7 @@ def return_main(app):
 def main():
 
     set_appearance_mode("dark")
-    set_default_color_theme("themes/MoonlitSky.json")
+    set_default_color_theme("themes/GhostTrain.json")
 
     app = CTk()
     app.geometry("600x500")
